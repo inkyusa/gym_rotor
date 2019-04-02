@@ -261,6 +261,13 @@ register(
 )
 
 register(
+    id='QuadRate-v0',
+    entry_point='gym.envs.mujoco:QuadRateEnv',
+    max_episode_steps=8000,
+    reward_threshold=9600.0,
+)
+
+register(
     id='Hopper-v2',
     entry_point='gym.envs.mujoco:HopperEnv',
     max_episode_steps=1000,
