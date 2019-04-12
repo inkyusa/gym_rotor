@@ -15,17 +15,24 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         #print('pos',self.sim.data.qpos)
+        mass=self.get_mass()
+        #print("mass=",mass[1])
+        action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
+
+        act_min=[3.5,-0.5,-0.7,-0.03]
+        act_max=[15,0.5,0.7,0.03]
+    #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
+        action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         #print("ob=",ob)
         pos = ob[0:3]
         lin_vel = ob[7:10]
-        reward_ctrl = - 0.1e-5 * np.square(action).sum()
+        reward_ctrl = - 0.1e-5 * np.sum(np.square(action))
         reward_position = -linalg.norm(pos) * 1e-0
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3 
-        #reward_run = (xposafter - xposbefore)/self.dt
         #reward = reward_ctrl + reward_position + reward_linear_velocity
-        reward = reward_position        
+        reward = reward_ctrl + reward_position #reward_linear_velocity
         done = False
         return ob, reward, done, dict(reward_ctrl=reward_ctrl, reward_position=reward_position, reward_linear_velocity=reward_linear_velocity)
 
@@ -46,6 +53,9 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 10
+    def get_mass(self):
+        mass = np.expand_dims(self.model.body_mass, axis=1)
+        return mass
     # def __init__(self, xml_name="quadrotor_quat.xml"):
     #     super(MujocoQuadQuaternionEnv, self).__init__(xml_name=xml_name)
 
