@@ -3,8 +3,13 @@ from numpy import linalg
 from gym import utils
 import os
 from gym.envs.mujoco import mujoco_env
+import math
 
 #from gym_reinmav.envs.mujoco import MujocoQuadEnv
+
+# For testing whether a number is close to zero
+_FLOAT_EPS = np.finfo(np.float64).eps
+_EPS4 = _FLOAT_EPS * 4.0
 
 
 class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -15,7 +20,6 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         status = False
-        #print('pos',self.sim.data.qpos)
         mass=self.get_mass()
         #print("mass=",mass[1])
         #temp_thrust= 
@@ -27,11 +31,13 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        ob[7:10]=0.1*ob[7:10]
         pos = ob[0:3]
-        quat = ob[3:7]
-        lin_vel = ob[7:10]
-        ang_vel= ob[10:13]
+        R = ob[3:12]
+        lin_vel = ob[12:15]
+        ang_vel= ob[15:18]
+        #R=self.quat2mat(quat.transpose())
+        rpy = self.RotToRPY(R)
+        #print("rpy(degrees) =",np.rad2deg(rpy))
         reward_ctrl = - 0.1e-5 * np.sum(np.square(action))
         reward_position = -linalg.norm(pos) * 1e-1
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
@@ -44,21 +50,35 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # print("status=",status)
         # print("pos=",pos)
         info = {
-            'rp': reward_position,
-            'rlv': reward_linear_velocity,
-            'rav': reward_angular_velocity,
-            'rctrl': reward_ctrl,
+            'rwp': reward_position,
+            'rwlv': reward_linear_velocity,
+            'rwav': reward_angular_velocity,
+            'rwctrl': reward_ctrl,
+            'obx': pos[0],
+            'oby': pos[1],
+            'obz': pos[2],
+            'obvx': lin_vel[0],
+            'obvy': lin_vel[1],
+            'obvz': lin_vel[2],
         }
 
+        retOb= np.concatenate([
+            pos,R.flat,lin_vel,ang_vel])
+
         done = status
-        return ob, reward, done, info
+        return retOb, reward, done, info
 
     def _get_obs(self):
-        return np.concatenate([
-            #self.sim.data.qpos.flat[1:],
-            self.sim.data.qpos.flat,
-            self.sim.data.qvel.flat,
-        ])
+        pos = self.sim.data.qpos.flat[0:3]
+        quat = self.sim.data.qpos.flat[3:7]
+        linVel = 0.1*self.sim.data.qvel.flat[0:3]
+        angVel = 0.1*self.sim.data.qvel.flat[3:6]
+        R=self.quat2mat(quat.transpose())
+        return np.concatenate([pos,R.flat,linVel,angVel])
+        # return np.concatenate([
+        #     self.sim.data.qpos.flat,
+        #     self.sim.data.qvel.flat,
+        # ])
 
     def reset_model(self):
         qpos = self.init_qpos + self.np_random.uniform(low=-.1, high=.1, size=self.model.nq)
@@ -73,6 +93,40 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
+
+    #stealed from rotations.py
+    def quat2mat(self,quat):
+        """ Convert Quaternion to Rotation matrix.  See rotation.py for notes """
+        quat = np.asarray(quat, dtype=np.float64)
+        assert quat.shape[-1] == 4, "Invalid shape quat {}".format(quat)
+
+        w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+        Nq = np.sum(quat * quat, axis=-1)
+        s = 2.0 / Nq
+        X, Y, Z = x * s, y * s, z * s
+        wX, wY, wZ = w * X, w * Y, w * Z
+        xX, xY, xZ = x * X, x * Y, x * Z
+        yY, yZ, zZ = y * Y, y * Z, z * Z
+
+        mat = np.empty(quat.shape[:-1] + (3, 3), dtype=np.float64)
+        mat[..., 0, 0] = 1.0 - (yY + zZ)
+        mat[..., 0, 1] = xY - wZ
+        mat[..., 0, 2] = xZ + wY
+        mat[..., 1, 0] = xY + wZ
+        mat[..., 1, 1] = 1.0 - (xX + zZ)
+        mat[..., 1, 2] = yZ - wX
+        mat[..., 2, 0] = xZ - wY
+        mat[..., 2, 1] = yZ + wX
+        mat[..., 2, 2] = 1.0 - (xX + yY)
+        return np.where((Nq > _FLOAT_EPS)[..., np.newaxis, np.newaxis], mat, np.eye(3))
+
+    def RotToRPY(self,R):
+        R=R.reshape(3,3) #to remove the last dimension i.e., 3,3,1
+        phi = math.asin(R[1,2])
+        psi = math.atan2(-R[1,0]/math.cos(phi),R[1,1]/math.cos(phi))
+        theta = math.atan2(-R[0,2]/math.cos(phi),R[2,2]/math.cos(phi))
+        return phi,theta,psi
+
     # def __init__(self, xml_name="quadrotor_quat.xml"):
     #     super(MujocoQuadQuaternionEnv, self).__init__(xml_name=xml_name)
 
