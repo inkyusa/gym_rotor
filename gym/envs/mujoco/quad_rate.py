@@ -14,10 +14,12 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
 
     def step(self, action):
+        status = False
         #print('pos',self.sim.data.qpos)
         mass=self.get_mass()
         #print("mass=",mass[1])
-        action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
+        #temp_thrust= 
+        #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
 
         act_min=[3.5,-0.5,-0.7,-0.03]
         act_max=[15,0.5,0.7,0.03]
@@ -25,15 +27,23 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
+        ob[7:10]=0.1*ob[7:10]
         #print("ob=",ob)
         pos = ob[0:3]
         lin_vel = ob[7:10]
+        ob[7:10]
         reward_ctrl = - 0.1e-5 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-0
+        reward_position = -linalg.norm(pos) * 1e-1
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3 
         #reward = reward_ctrl + reward_position + reward_linear_velocity
-        reward = reward_ctrl + reward_position #reward_linear_velocity
-        done = False
+        #reward = reward_ctrl + reward_position + reward_linear_velocity
+        reward = reward_ctrl+reward_position+reward_linear_velocity;
+        status= pos[2] <-5 or pos[2] >5 \
+                or abs(pos[0]) > 10.0 \
+                or abs(pos[1]) > 10.0
+        # print("status=",status)
+        # print("pos=",pos)
+        done = status
         return ob, reward, done, dict(reward_ctrl=reward_ctrl, reward_position=reward_position, reward_linear_velocity=reward_linear_velocity)
 
     def _get_obs(self):
