@@ -93,16 +93,9 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return ob, reward, done, info
 
     def _get_obs(self):
-        # pos = self.sim.data.qpos.flat[0:3]
-        # quat = self.sim.data.qpos.flat[3:7]
-        # linVel = 0.1*self.sim.data.qvel.flat[0:3]
-        # angVel = 0.1*self.sim.data.qvel.flat[3:6]
-        # R=self.quat2mat(quat.transpose())
-        # return np.concatenate([pos,R.flat,linVel,angVel])
-        return np.concatenate([
-            self.sim.data.qpos.flat,
-            self.sim.data.qvel.flat,
-        ])
+        pos = self.sim.data.qpos*1e-1
+        vel = self.sim.data.qvel*1e-2
+        return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
         # pos = self.np_random.uniform(size=3, low=-20, high=20)
