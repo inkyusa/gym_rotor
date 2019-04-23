@@ -17,6 +17,8 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #xml_path = os.path.join(os.path.dirname(__file__), "./assets", 'half_cheetah.xml')
         mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
         utils.EzPickle.__init__(self)
+        self.avg_rwd=-34 #obtained from eprewmean
+        self.gamma=0.99 #ppo2 default setting value
 
     def step(self, action):
         status = False
@@ -66,6 +68,9 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             pos,R.flat,lin_vel,ang_vel])
 
         done = status
+        if done:
+        	reward = self.avg_rwd / (1-self.gamma)#-13599.99
+        	#print("terminated reward=",reward)
         return retOb, reward, done, info
 
     def _get_obs(self):
