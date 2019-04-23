@@ -23,7 +23,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         mass=self.get_mass()
         #print("mass=",mass[1])
         #temp_thrust= 
-        action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
+        #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
 
         act_min=[3.5,-0.5,-0.7,-0.03]
         act_max=[15,0.5,0.7,0.03]
@@ -38,13 +38,13 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #R=self.quat2mat(quat.transpose())
         rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        reward_ctrl = - 0.1e-5 * np.sum(np.square(action))
+        reward_ctrl = - 0.1e-2 * np.sum(np.square(action))
         reward_position = -linalg.norm(pos) * 1e-1
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
         reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity;
         
-        status= abs(pos[2]) >10 \
+        status= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
         # print("status=",status)
@@ -81,7 +81,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # ])
 
     def reset_model(self):
-        pos = self.np_random.uniform(size=3, low=-10, high=10)
+        pos = self.np_random.uniform(size=3, low=-20, high=20)
         quat = self.np_random.uniform(size=4, low=-1, high=1)
         linVel = self.np_random.uniform(size=3, low=-2, high=2)
         angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
