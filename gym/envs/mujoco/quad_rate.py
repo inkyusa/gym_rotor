@@ -44,9 +44,9 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity;
         
-        status= pos[2] <-5 or pos[2] >5 \
-                or abs(pos[0]) > 10.0 \
-                or abs(pos[1]) > 10.0
+        status= abs(pos[2]) >10 \
+                or abs(pos[0]) > 50.0 \
+                or abs(pos[1]) > 50.0
         # print("status=",status)
         # print("pos=",pos)
         info = {
@@ -81,10 +81,24 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # ])
 
     def reset_model(self):
-        qpos = self.init_qpos + self.np_random.uniform(low=-.1, high=.1, size=self.model.nq)
-        qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .1
+        pos = self.np_random.uniform(size=3, low=-10, high=10)
+        quat = self.np_random.uniform(size=4, low=-1, high=1)
+        linVel = self.np_random.uniform(size=3, low=-2, high=2)
+        angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
+        qpos = np.concatenate([pos,quat])
+        qvel = np.concatenate([linVel,angVel])
+        #qpos = self.init_qpos + self.np_random.uniform(low=-.1, high=.1, size=self.model.nq)
+        #qpos = self.init_qpos
+        #qpos[0:3] = qpos[0:3]+self.np_random.uniform(size=3, low=-10, high=10)
+
+        #ob[3:12] = self.np_random.uniform(size=9, low=-1, high=1)
+        #qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .1
+        #qvel[0:3] = self.np_random.uniform(size=3, low=-2, high=2)
+        #qvel[3:6] = self.np_random.uniform(size=3, low=-0.5, high=0.5)
+
         self.set_state(qpos, qvel)
-        return self._get_obs()
+        observation = self._get_obs();
+        return observation
 
     def viewer_setup(self):
         v = self.viewer
