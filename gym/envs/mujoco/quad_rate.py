@@ -17,45 +17,64 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #xml_path = os.path.join(os.path.dirname(__file__), "./assets", 'half_cheetah.xml')
         mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
         utils.EzPickle.__init__(self)
-        self.avg_rwd=-34 #obtained from eprewmean
+        self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
 
     def step(self, action):
-        status = False
         mass=self.get_mass()
         #print("mass=",mass[1])
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
 
-        act_min=[3.5,-0.5,-0.7,-0.03]
-        act_max=[15,0.5,0.7,0.03]
+        #act_min=[3.5,-0.5,-0.7,-0.03]
+        #act_max=[30,0.5,0.7,0.03]
     #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-        action = np.clip(action, a_min=act_min, a_max=act_max)
+        #action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         pos = ob[0:3]
-        R = ob[3:12]
-        lin_vel = ob[12:15]
-        ang_vel= ob[15:18]
+        #R = ob[3:12]
+        #lin_vel = ob[12:15]
+        #ang_vel= ob[15:18]
+        quat = ob[3:7]
+        lin_vel = ob[7:10]
         #R=self.quat2mat(quat.transpose())
-        rpy = self.RotToRPY(R)
+        #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        reward_ctrl = - 0.1e-2 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-1
-        reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
-        reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity;
+        # reward_ctrl = - 0.1e-2 * np.sum(np.square(action))
+        # reward_position = -linalg.norm(pos) * 1e-1
+        # reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
+        # reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
+        # reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity
+        reward_ctrl = 0 #- 0.1e-2 * np.sum(np.square(action))
+        reward_position = -linalg.norm(pos) * 1e-2
+        reward_linear_velocity = 0 #-linalg.norm(lin_vel) * 0.1e-3
+        reward_angular_velocity = 0 #-linalg.norm(ang_vel) * 0.1e-3
+
+        reward = reward_position
         
-        status= abs(pos[2]) >50 \
+        done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
         # print("status=",status)
         # print("pos=",pos)
+        # info = {
+        #     'rwp': reward_position,
+        #     'rwlv': reward_linear_velocity,
+        #     'rwav': reward_angular_velocity,
+        #     'rwctrl': reward_ctrl,
+        #     'obx': pos[0],
+        #     'oby': pos[1],
+        #     'obz': pos[2],
+        #     'obvx': lin_vel[0],
+        #     'obvy': lin_vel[1],
+        #     'obvz': lin_vel[2],
+        # }
         info = {
             'rwp': reward_position,
-            'rwlv': reward_linear_velocity,
-            'rwav': reward_angular_velocity,
-            'rwctrl': reward_ctrl,
+            'rwlv': 0,
+            'rwav': 0,
+            'rwctrl': 0,
             'obx': pos[0],
             'oby': pos[1],
             'obz': pos[2],
@@ -64,35 +83,38 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             'obvz': lin_vel[2],
         }
 
-        retOb= np.concatenate([
-            pos,R.flat,lin_vel,ang_vel])
+        # retOb= np.concatenate([
+        #     pos,R.flat,lin_vel,ang_vel])
 
-        done = status
         if done:
         	reward = self.avg_rwd / (1-self.gamma)#-13599.99
         	#print("terminated reward=",reward)
-        return retOb, reward, done, info
+        #return retOb, reward, done, info
+        return ob, reward, done, info
 
     def _get_obs(self):
-        pos = self.sim.data.qpos.flat[0:3]
-        quat = self.sim.data.qpos.flat[3:7]
-        linVel = 0.1*self.sim.data.qvel.flat[0:3]
-        angVel = 0.1*self.sim.data.qvel.flat[3:6]
-        R=self.quat2mat(quat.transpose())
-        return np.concatenate([pos,R.flat,linVel,angVel])
-        # return np.concatenate([
-        #     self.sim.data.qpos.flat,
-        #     self.sim.data.qvel.flat,
-        # ])
+        # pos = self.sim.data.qpos.flat[0:3]
+        # quat = self.sim.data.qpos.flat[3:7]
+        # linVel = 0.1*self.sim.data.qvel.flat[0:3]
+        # angVel = 0.1*self.sim.data.qvel.flat[3:6]
+        # R=self.quat2mat(quat.transpose())
+        # return np.concatenate([pos,R.flat,linVel,angVel])
+        return np.concatenate([
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat,
+        ])
 
     def reset_model(self):
-        pos = self.np_random.uniform(size=3, low=-20, high=20)
-        quat = self.np_random.uniform(size=4, low=-1, high=1)
-        linVel = self.np_random.uniform(size=3, low=-2, high=2)
-        angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
-        qpos = np.concatenate([pos,quat])
-        qvel = np.concatenate([linVel,angVel])
-        #qpos = self.init_qpos + self.np_random.uniform(low=-.1, high=.1, size=self.model.nq)
+        # pos = self.np_random.uniform(size=3, low=-20, high=20)
+        # quat = self.np_random.uniform(size=4, low=-1, high=1)
+        # linVel = self.np_random.uniform(size=3, low=-2, high=2)
+        # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
+        # qpos = np.concatenate([pos,quat])
+        # qvel = np.concatenate([linVel,angVel])
+
+        qpos = self.init_qpos 
+        qvel = self.init_qvel
+        #qpos[0:3] += self.np_random.uniform(low=-.1, high=.1, size=3)
         #qpos = self.init_qpos
         #qpos[0:3] = qpos[0:3]+self.np_random.uniform(size=3, low=-10, high=10)
 
