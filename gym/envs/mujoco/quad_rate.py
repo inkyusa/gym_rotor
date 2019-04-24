@@ -38,43 +38,25 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #ang_vel= ob[15:18]
         quat = ob[3:7]
         lin_vel = ob[7:10]
+        ang_vel = ob[10:13]
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        # reward_ctrl = - 0.1e-2 * np.sum(np.square(action))
-        # reward_position = -linalg.norm(pos) * 1e-1
-        # reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
-        # reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        # reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity
-        reward_ctrl = 0 #- 0.1e-2 * np.sum(np.square(action))
+        reward_ctrl = - 0.1e-3 * np.sum(np.square(action))
         reward_position = -linalg.norm(pos) * 1e-2
-        reward_linear_velocity = 0 #-linalg.norm(lin_vel) * 0.1e-3
-        reward_angular_velocity = 0 #-linalg.norm(ang_vel) * 0.1e-3
-
-        reward = reward_position
-        
+        reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
+        reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
+        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
         # print("status=",status)
         # print("pos=",pos)
-        # info = {
-        #     'rwp': reward_position,
-        #     'rwlv': reward_linear_velocity,
-        #     'rwav': reward_angular_velocity,
-        #     'rwctrl': reward_ctrl,
-        #     'obx': pos[0],
-        #     'oby': pos[1],
-        #     'obz': pos[2],
-        #     'obvx': lin_vel[0],
-        #     'obvy': lin_vel[1],
-        #     'obvz': lin_vel[2],
-        # }
         info = {
             'rwp': reward_position,
-            'rwlv': 0,
-            'rwav': 0,
-            'rwctrl': 0,
+            'rwlv': reward_linear_velocity,
+            'rwav': reward_angular_velocity,
+            'rwctrl': reward_ctrl,
             'obx': pos[0],
             'oby': pos[1],
             'obz': pos[2],
@@ -82,7 +64,6 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             'obvy': lin_vel[1],
             'obvz': lin_vel[2],
         }
-
         # retOb= np.concatenate([
         #     pos,R.flat,lin_vel,ang_vel])
 
@@ -93,8 +74,10 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return ob, reward, done, info
 
     def _get_obs(self):
-        pos = self.sim.data.qpos*1e-1
-        vel = self.sim.data.qvel*1e-2
+        # pos = self.sim.data.qpos*1e-1
+        # vel = self.sim.data.qvel*1e-2
+        pos = self.sim.data.qpos*1e-0
+        vel = self.sim.data.qvel*1e-0
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
