@@ -11,21 +11,20 @@ import math
 _FLOAT_EPS = np.finfo(np.float64).eps
 _EPS4 = _FLOAT_EPS * 4.0
 
-
 class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         #xml_path = os.path.join(os.path.dirname(__file__), "./assets", 'half_cheetah.xml')
-        mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
-        utils.EzPickle.__init__(self)
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
-
+        self.log_cnt=0
+        mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
+        utils.EzPickle.__init__(self)
     def step(self, action):
         mass=self.get_mass()
         #print("mass=",mass[1])
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
-
+        #print("gamma=",self.gamma)
         #act_min=[3.5,-0.5,-0.7,-0.03]
         #act_max=[30,0.5,0.7,0.03]
     #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
@@ -66,11 +65,15 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         }
         # retOb= np.concatenate([
         #     pos,R.flat,lin_vel,ang_vel])
-
         if done:
-        	reward = self.avg_rwd / (1-self.gamma)#-13599.99
+        	reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
         	#print("terminated reward=",reward)
         #return retOb, reward, done, info
+        if (self.log_cnt==1e4):
+             print("x={},y={},z={}\n".format(pos[0],pos[1],pos[2]))
+             print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
+             self.log_cnt=0
+        else: self.log_cnt=self.log_cnt+1
         return ob, reward, done, info
 
     def _get_obs(self):
@@ -87,15 +90,14 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
         # qpos = np.concatenate([pos,quat])
         # qvel = np.concatenate([linVel,angVel])
-
-        qpos = self.init_qpos 
-        qvel = self.init_qvel
-        #qpos[0:3] += self.np_random.uniform(low=-.1, high=.1, size=3)
+        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1, high=0.1)
+        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05, high=0.05)
+        #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
         #qpos[0:3] = qpos[0:3]+self.np_random.uniform(size=3, low=-10, high=10)
 
         #ob[3:12] = self.np_random.uniform(size=9, low=-1, high=1)
-        #qvel = self.init_qvel + self.np_random.randn(self.model.nv) * .1
+        #qvel += self.np_random.uniform(size=6, low=-0.5, high=0.5)
         #qvel[0:3] = self.np_random.uniform(size=3, low=-2, high=2)
         #qvel[3:6] = self.np_random.uniform(size=3, low=-0.5, high=0.5)
 
