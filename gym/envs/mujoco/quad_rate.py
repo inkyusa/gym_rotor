@@ -45,7 +45,8 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward_position = -linalg.norm(pos) * 1e-2
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
         reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity
+        reward_alive = 1/8e3
+        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
