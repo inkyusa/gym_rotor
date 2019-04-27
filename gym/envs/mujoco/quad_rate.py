@@ -25,10 +25,10 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
         #print("gamma=",self.gamma)
-        #act_min=[3.5,-0.5,-0.7,-0.03]
-        #act_max=[30,0.5,0.7,0.03]
+        act_min=[3.5,-0.5,-0.7,-0.03]
+        act_max=[30,0.5,0.7,0.03]
     #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-        #action = np.clip(action, a_min=act_min, a_max=act_max)
+        action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         pos = ob[0:3]
@@ -45,7 +45,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward_position = -linalg.norm(pos) * 1e-2
         reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
         reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        reward_alive = 1/8e3
+        reward_alive = 1e-2
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
