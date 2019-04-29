@@ -51,23 +51,24 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
 
         reward_alive = 1e-2
-        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
-        done= abs(pos[2]) >50 \
-                or abs(pos[0]) > 50.0 \
-                or abs(pos[1]) > 50.0
+        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive+reward_z_offset
+        # done= abs(pos[2]) >50 \
+        #         or abs(pos[0]) > 50.0 \
+        #         or abs(pos[1]) > 50.0
+        done = ball_pos[2] <= quad_pos[2]
         # print("status=",status)
-        print("pos=",pos)
+        # print("pos=",pos)
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
             'rwav': reward_angular_velocity,
             'rwctrl': reward_ctrl,
-            'obx': pos[0],
-            'oby': pos[1],
-            'obz': pos[2],
-            'obvx': lin_vel[0],
-            'obvy': lin_vel[1],
-            'obvz': lin_vel[2],
+            'obxq': quad_pos[0],
+            'obyq': quad_pos[1],
+            'obzq': quad_pos[2],
+            'obxb': ball_pos[0],
+            'obyb': ball_pos[1],
+            'obzb': ball_pos[2],
         }
         # retOb= np.concatenate([
         #     pos,R.flat,lin_vel,ang_vel])
@@ -76,8 +77,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         	#print("terminated reward=",reward)
         #return retOb, reward, done, info
         if (self.log_cnt==1e4):
-             print("x={},y={},z={}\n".format(pos[0],pos[1],pos[2]))
-             print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
+             print("x={},y={},z={}\n".format(quad_pos[0]-ball_pos[0],quad_pos[1]-ball_pos[1],quad_pos[2]-ball_pos[2]))
+             #print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
              self.log_cnt=0
         else: self.log_cnt=self.log_cnt+1
         return ob, reward, done, info
@@ -87,8 +88,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # vel = self.sim.data.qvel*1e-2
         pos = self.sim.data.qpos*1e-0
         vel = self.sim.data.qvel*1e-0
-        print("pos=",pos)
-        print("vel=",vel)
+        #print("pos=",pos)
+        #print("vel=",vel)
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
