@@ -16,3 +16,4 @@ from gym.envs.mujoco.thrower import ThrowerEnv
 from gym.envs.mujoco.striker import StrikerEnv
 from gym.envs.mujoco.quad_rate import QuadRateEnv
 from gym.envs.mujoco.ball_bouncing_quad import BallBouncingQuadEnv
+from gym.envs.mujoco.overactuated_quad import OveractuatedQuadEnv
