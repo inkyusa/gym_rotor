@@ -17,6 +17,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
+        self.z_offset=0.3 #bouncing the ball 30 cm above quad
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         utils.EzPickle.__init__(self)
     def step(self, action):
@@ -31,20 +32,24 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        pos = ob[0:3]
+        quad_pos = ob[0:3]
+        ball_pos = ob[7:10]
         #R = ob[3:12]
         #lin_vel = ob[12:15]
         #ang_vel= ob[15:18]
-        quat = ob[3:7]
-        lin_vel = ob[7:10]
-        ang_vel = ob[10:13]
+        quad_quat = ob[3:7]
+        quad_lin_vel = ob[7:10]
+        quad_ang_vel = ob[10:13]
+        ball_vel = ob[13:16]
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
         reward_ctrl = - 0.1e-3 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-2
-        reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
-        reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
+        reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-2
+        reward_linear_velocity = -linalg.norm(quad_lin_vel) * 0.1e-3
+        reward_angular_velocity = -linalg.norm(quad_ang_vel) * 0.1e-3
+        reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
+
         reward_alive = 1e-2
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
         done= abs(pos[2]) >50 \
