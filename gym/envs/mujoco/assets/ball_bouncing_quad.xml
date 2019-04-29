@@ -30,10 +30,10 @@
 			<site name="qcY" type="box" pos="0.0 0.1 0.0" size="0.1 0.005 0.005"  quat = " 0.707  0.0  0.0    0.707"  rgba="0 1 0 1" />
 			<site name="qcZ" type="box" pos="0.0 0.0 0.1" size="0.1 0.005 0.005"  quat = "-0.707  0.0  0.707  0."     rgba="0 0 1 1" />
 		</body>
-        <!-- <body name="ball" pos="0 0 .6">
+        <body name="ball" pos="0 0 .6">
             <joint name="ball_joint" type="free" />
-            <geom name="ball" type="sphere" size=".05" material="effector" solref="0.02 0.001"/>
-        </body> -->
+            <geom name="ball" type="sphere" size=".05" solref="0.02 0.01"/>
+        </body>
 	</worldbody>
     <actuator>
 		<motor ctrllimited="true" ctrlrange="0.0 7.0" gear="0  0. 1. 0. 0. 0." site="thrust"/>

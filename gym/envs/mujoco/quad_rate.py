@@ -51,7 +51,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
         # print("status=",status)
-        # print("pos=",pos)
+        print("pos=",pos)
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
@@ -109,7 +109,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def viewer_setup(self):
         v = self.viewer
         v.cam.trackbodyid = 0
-        v.cam.distance = self.model.stat.extent * 10
+        v.cam.distance = self.model.stat.extent * 4
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass

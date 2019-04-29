@@ -82,6 +82,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # vel = self.sim.data.qvel*1e-2
         pos = self.sim.data.qpos*1e-0
         vel = self.sim.data.qvel*1e-0
+        print("pos=",pos)
+        print("vel=",vel)
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
@@ -93,6 +95,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # qvel = np.concatenate([linVel,angVel])
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1, high=0.1)
         qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05, high=0.05)
+
         #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
         #qpos[0:3] = qpos[0:3]+self.np_random.uniform(size=3, low=-10, high=10)
