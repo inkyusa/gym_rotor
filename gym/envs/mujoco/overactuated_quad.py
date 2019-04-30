@@ -25,8 +25,8 @@ class OveractuatedQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
         #print("gamma=",self.gamma)
-        act_min=[3.5,-0.5,-0.7,-0.03]
-        act_max=[30,0.5,0.7,0.03]
+        act_min=[3.5,-0.5,-0.7,-0.03,-1,-1,-1,-1]
+        act_max=[30,0.5,0.7,0.03,1,1,1,1]
     #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
