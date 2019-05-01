@@ -33,6 +33,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         quad_pos = ob[0:3]
+
         ball_pos = ob[7:10]
         #R = ob[3:12]
         #lin_vel = ob[12:15]
@@ -44,24 +45,28 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        reward_ctrl = - 0.1e-4 * np.sum(np.square(action))
+        reward_ctrl = - 1e-4 * np.sum(np.square(action))
         reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-2
-        reward_linear_velocity = -linalg.norm(quad_lin_vel) * 0.1e-3
-        reward_angular_velocity = -linalg.norm(quad_ang_vel) * 0.1e-3
+        #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 0.1e-3
+        #reward_angular_velocity = -linalg.norm(quad_ang_vel) * 0.1e-3
         #reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
 
         reward_alive = 1e-2
-        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
+        #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
+        reward = reward_ctrl+reward_position+reward_alive #+reward_z_offset
+        
         # done= abs(pos[2]) >50 \
         #         or abs(pos[0]) > 50.0 \
         #         or abs(pos[1]) > 50.0
+        # print("quad pos=",quad_pos)
+        # print("ball pos=",ball_pos)
         done = ball_pos[2] <= quad_pos[2]
         # print("status=",status)
         # print("pos=",pos)
         info = {
             'rwp': reward_position,
-            'rwlv': reward_linear_velocity,
-            'rwav': reward_angular_velocity,
+            #'rwlv': reward_linear_velocity,
+            #'rwav': reward_angular_velocity,
             'rwctrl': reward_ctrl,
             'obxq': quad_pos[0],
             'obyq': quad_pos[1],
