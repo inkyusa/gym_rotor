@@ -41,11 +41,11 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        reward_ctrl = - 0.1e-4 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-2
-        reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
-        reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        reward_alive = 1e-2
+        reward_ctrl = - 1e-4 * np.sum(np.square(action))
+        reward_position = -linalg.norm(pos) * 1e-1
+        reward_linear_velocity = -linalg.norm(lin_vel) * 1e-2
+        reward_angular_velocity = -linalg.norm(ang_vel) * 1e-3
+        reward_alive = 1e-1
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
