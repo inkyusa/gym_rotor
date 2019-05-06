@@ -33,34 +33,38 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         quad_pos = ob[0:3]
-
+        quad_quat = ob[3:7]
         ball_pos = ob[7:10]
         #R = ob[3:12]
         #lin_vel = ob[12:15]
         #ang_vel= ob[15:18]
-        quad_quat = ob[3:7]
-        quad_lin_vel = ob[7:10]
-        quad_ang_vel = ob[10:13]
-        ball_vel = ob[13:16]
+        quad_lin_vel = ob[14:17]
+        quad_ang_vel = ob[17:20]
+        ball_vel = ob[20:23]
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
-        reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-2
-        #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 0.1e-3
-        #reward_angular_velocity = -linalg.norm(quad_ang_vel) * 0.1e-3
+        reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-1
+        reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
+        reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
         #reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
 
-        reward_alive = 1e-2
+        reward_alive = 1e-1
         #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
-        reward = reward_ctrl+reward_position+reward_alive #+reward_z_offset
+        reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
         
+        done= abs(quad_pos[2]) >50 \
+                or abs(quad_pos[0]) > 50.0 \
+                or abs(quad_pos[1]) > 50.0 \
+                or ball_pos[2] <= quad_pos[2]
+
         # done= abs(pos[2]) >50 \
         #         or abs(pos[0]) > 50.0 \
         #         or abs(pos[1]) > 50.0
         # print("quad pos=",quad_pos)
         # print("ball pos=",ball_pos)
-        done = ball_pos[2] <= quad_pos[2]
+        #done = ball_pos[2] <= quad_pos[2]
         # print("status=",status)
         # print("pos=",pos)
         info = {
@@ -95,6 +99,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         vel = self.sim.data.qvel*1e-0
         #print("pos=",pos)
         #print("vel=",vel)
+        #del temp_ob[10:14] # orientation of the ball
+        #del temp_ob[23:26] # angular velocity of the ball
+        #print("temp_ob.shape()=",temp_ob.shape) # 26-7=19 state
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
@@ -104,8 +111,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
         # qpos = np.concatenate([pos,quat])
         # qvel = np.concatenate([linVel,angVel])
-        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1, high=0.1)
-        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05, high=0.05)
+        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
+        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
 
         #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
@@ -117,7 +124,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #qvel[3:6] = self.np_random.uniform(size=3, low=-0.5, high=0.5)
 
         self.set_state(qpos, qvel)
-        observation = self._get_obs();
+        observation = self._get_obs()
         return observation
 
     def viewer_setup(self):
