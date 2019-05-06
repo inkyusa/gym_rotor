@@ -85,8 +85,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # retOb= np.concatenate([
         #     pos,R.flat,lin_vel,ang_vel])
         if done:
-        	reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
-        	#print("terminated reward=",reward)
+        	#reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
+        	reward = -1
+            #print("terminated reward=",reward)
         #return retOb, reward, done, info
         if (self.log_cnt==1e4):
              print("x={},y={},z={}\n".format(quad_pos[0]-ball_pos[0],quad_pos[1]-ball_pos[1],quad_pos[2]-ball_pos[2]))
