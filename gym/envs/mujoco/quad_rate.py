@@ -108,8 +108,13 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def viewer_setup(self):
         v = self.viewer
-        v.cam.trackbodyid = 0
-        v.cam.distance = self.model.stat.extent * 10
+        v.cam.trackbodyid = 1
+        v.cam.distance = self.model.stat.extent * 4
+        v.cam.azimuth = 132.
+        #v.cam.lookat[2] += .8
+        #v.cam.elevation = 0
+        #v.cam.lookat[0] += 1.5
+        v.cam.elevation +=0.9
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
