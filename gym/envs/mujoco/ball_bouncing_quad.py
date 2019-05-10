@@ -26,12 +26,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
         #print("gamma=",self.gamma)
-        act_min=[3.5,-0.5,-0.7,-0.03]
-        act_max=[30,0.5,0.7,0.03]
+        #act_min=[3.5,-0.5,-0.7,-0.03]
+        #act_max=[30,0.5,0.7,0.03]
     #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-        action = np.clip(action, a_min=act_min, a_max=act_max)
-        self.do_simulation(action, self.frame_skip)
-        ob = self._get_obs()
+        #action = np.clip(action, a_min=act_min, a_max=act_max)
+        #self.do_simulation(action, self.frame_skip)
+        #ob = self._get_obs()
         quad_pos = ob[0:3]
         quad_quat = ob[3:7]
         ball_pos = ob[7:10]
@@ -98,6 +98,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
              #print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
              self.log_cnt=0
         else: self.log_cnt=self.log_cnt+1
+
+        act_min=[3.5,-0.5,-0.7,-0.03]
+        act_max=[30,0.5,0.7,0.03]
+        action = np.clip(action, a_min=act_min, a_max=act_max)
+        self.do_simulation(action, self.frame_skip)
+        ob = self._get_obs()
         return ob, reward, done, info
 
     def _get_obs(self):
