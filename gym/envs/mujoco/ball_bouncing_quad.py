@@ -4,6 +4,7 @@ from gym import utils
 import os
 from gym.envs.mujoco import mujoco_env
 import math
+import mujoco_py
 
 #from gym_reinmav.envs.mujoco import MujocoQuadEnv
 
@@ -20,6 +21,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.z_offset=0.1 #bouncing the ball 30 cm above quad
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         utils.EzPickle.__init__(self)
+        self.hit_cnt=0
     def step(self, action):
         mass=self.get_mass()
         #print("mass=",mass[1])
@@ -45,15 +47,18 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
+        #self.print_contact_info()
+        self.checkContact()
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
         reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-1
         reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
         
         reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
-        if (ball_pos[2]-quad_pos[2] > self.z_offset):
-            reward_bouncing_bonus = 5e-1
-        else: reward_bouncing_bonus = 0
+        # if (ball_pos[2]-quad_pos[2] > self.z_offset):
+        #     reward_bouncing_bonus = 5e-1
+        # else: reward_bouncing_bonus = 0
+        reward_bouncing_bonus = self.hit_cnt*5e-1
         #reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
 
         reward_alive = 1e-1
@@ -103,15 +108,66 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         act_min=[3.5,-1.5,-1.5,-0.3]
         act_max=[35,1.5,1.5,0.3]
         action = np.clip(action, a_min=act_min, a_max=act_max)
+        #action = [3.9, 0, 0, 0]
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         return ob, reward, done, info
+    def print_contact_info(self):
+        # print('number of contacts', self.sim.data.ncon)
+        for i in range(self.sim.data.ncon):
+            # Note that the contact array has more than `ncon` entries,
+            # so be careful to only read the valid entries.
+            contact = self.sim.data.contact[i]
+            # print('contact', i)
+            # print('dist', contact.dist)
+            # print('geom1', contact.geom1, self.sim.model.geom_id2name(contact.geom1))
+            # print('geom2', contact.geom2, self.sim.model.geom_id2name(contact.geom2))
+            # There's more stuff in the data structure
+            # See the mujoco documentation for more info!
+            geom2_body = self.sim.model.geom_bodyid[self.sim.data.contact[i].geom2]
+            # print(' Contact force on geom2 body', self.sim.data.cfrc_ext[geom2_body])
+            # print('norm', np.sqrt(np.sum(np.square(self.sim.data.cfrc_ext[geom2_body]))))
+            # Use internal functions to read out mj_contactForce
+            c_array = np.zeros(6, dtype=np.float64)
+            mujoco_py.functions.mj_contactForce(self.sim.model, self.sim.data, i, c_array)
+            print('c_array', c_array)
+            if c_array[0]>8 and c_array[1] < 1e-3 and c_array[2] < 1e-3:
+                print("============ball collided=======")
+                self.hit_cnt+=1
+
+    def checkContact(self):
+        # dist = linalg.norm(ball_pos - quad_pos)
+        # #print("dist=",dist)
+        # if dist<0.13:
+        #     self._ball_hit_quad=True
+        # else:
+        #     self._ball_hit_quad=False
+        #     #print("collided")
+        # Below doesn't work (i.e., inconsistenly detect ball and core collision)
+        # so using distance between core and ball instead. 0.13 was experimentally chosen
+        if self.sim.data.ncon>0:
+            #print('number of contacts', self.sim.data.ncon)
+            for i in range(self.sim.data.ncon):
+                contact = self.sim.data.contact[i]
+                geom1_name=self.sim.model.geom_id2name(contact.geom1)
+                geom2_name=self.sim.model.geom_id2name(contact.geom2)
+                #print('geom1', contact.geom1, self.sim.model.geom_id2name(contact.geom1))
+                #print('geom2', contact.geom2, self.sim.model.geom_id2name(contact.geom2))
+                if (geom1_name=='core' and geom2_name=='ball') or (geom1_name=='ball' and geom2_name=='core'):
+                    c_array = np.zeros(6, dtype=np.float64)
+                    mujoco_py.functions.mj_contactForce(self.sim.model, self.sim.data, i, c_array)
+                    #print('c_array', c_array)
+                    if c_array[0]>6 and c_array[1] < 3e-2 and c_array[2] < 3e-2:
+                        #print("============ball collided=======")
+                        self.hit_cnt+=1
+                        #print("self.hit_cnt=",self.hit_cnt)
+
 
     def _get_obs(self):
         # pos = self.sim.data.qpos*1e-1
         # vel = self.sim.data.qvel*1e-2
-        pos = self.sim.data.qpos*1e-0
-        vel = self.sim.data.qvel*1e-0
+        pos = self.sim.data.qpos
+        vel = self.sim.data.qvel
         #print("pos=",pos)
         #print("vel=",vel)
         #del temp_ob[10:14] # orientation of the ball
@@ -120,6 +176,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
+        self.hit_cnt=0
         # pos = self.np_random.uniform(size=3, low=-20, high=20)
         # quat = self.np_random.uniform(size=4, low=-1, high=1)
         # linVel = self.np_random.uniform(size=3, low=-2, high=2)
@@ -128,6 +185,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # qvel = np.concatenate([linVel,angVel])
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
         qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        #qpos = self.init_qpos 
+        #qvel = self.init_qvel
 
         #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
@@ -146,7 +205,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 4
-        v._run_speed=0.1 #1
+        v._run_speed=0.05#0.1 #1
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
