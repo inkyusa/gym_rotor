@@ -32,6 +32,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #action = np.clip(action, a_min=act_min, a_max=act_max)
         #self.do_simulation(action, self.frame_skip)
         #ob = self._get_obs()
+        ob = self._get_obs()
         quad_pos = ob[0:3]
         quad_quat = ob[3:7]
         ball_pos = ob[7:10]
