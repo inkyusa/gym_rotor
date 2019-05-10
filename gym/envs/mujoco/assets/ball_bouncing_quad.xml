@@ -34,7 +34,7 @@
         </body>
         <body name="ball" pos="0 0 -1">
             <joint name="ball_joint" type="free" />
-            <geom name="ball" type="sphere" size=".05" solref="0.001 -0.88" mass = ".01" contype="1" conaffinity="1" condim="3"/>
+            <geom name="ball" type="sphere" size=".05" solref="-100000 0" mass = ".01" contype="1" conaffinity="1" condim="3"/>
         </body>
     </worldbody>
     <actuator>
