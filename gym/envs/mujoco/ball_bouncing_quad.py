@@ -100,8 +100,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
              self.log_cnt=0
         else: self.log_cnt=self.log_cnt+1
 
-        act_min=[3.5,-0.5,-0.7,-0.03]
-        act_max=[30,0.5,0.7,0.03]
+        act_min=[3.5,-1.5,-1.5,-0.3]
+        act_max=[35,1.5,1.5,0.3]
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
