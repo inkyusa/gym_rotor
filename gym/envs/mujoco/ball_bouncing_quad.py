@@ -19,9 +19,10 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
         self.z_offset=0.1 #bouncing the ball 30 cm above quad
+        self.hit_cnt=0
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         utils.EzPickle.__init__(self)
-        self.hit_cnt=0
+        
     def step(self, action):
         mass=self.get_mass()
         #print("mass=",mass[1])
