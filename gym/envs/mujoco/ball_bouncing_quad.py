@@ -35,7 +35,6 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        ob = self._get_obs()
         quad_pos = ob[0:3]
         quad_quat = ob[3:7]
         ball_pos = ob[7:10]
@@ -51,8 +50,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #self.print_contact_info()
         self.checkContact()
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
-        reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
-        # reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+        reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e1
+        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
         
         reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
@@ -66,7 +65,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
         reward = reward_ctrl+reward_position+reward_linear_velocity \
                 +reward_angular_velocity+reward_alive\
-                # +reward_quad_z_position #+reward_z_offset
+                +reward_quad_z_position #+reward_z_offset
         
         done= abs(quad_pos[2]) >50 \
                 or abs(quad_pos[0]) > 50.0 \
