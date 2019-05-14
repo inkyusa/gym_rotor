@@ -29,12 +29,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
         #print("gamma=",self.gamma)
-        #act_min=[3.5,-0.5,-0.7,-0.03]
-        #act_max=[30,0.5,0.7,0.03]
-    #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-        #action = np.clip(action, a_min=act_min, a_max=act_max)
-        #self.do_simulation(action, self.frame_skip)
-        #ob = self._get_obs()
+        act_min=[3.5,-0.5,-0.7,-0.03]
+        act_max=[30,0.5,0.7,0.03]
+        #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
+        action = np.clip(action, a_min=act_min, a_max=act_max)
+        self.do_simulation(action, self.frame_skip)
+        ob = self._get_obs()
         ob = self._get_obs()
         quad_pos = ob[0:3]
         quad_quat = ob[3:7]
@@ -51,8 +51,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #self.print_contact_info()
         self.checkContact()
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
-        reward_position = -linalg.norm(quad_pos[0:2]-ball_pos[0:2]) * 1e-1
-        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+        reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
+        # reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
         
         reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
@@ -66,14 +66,15 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
         reward = reward_ctrl+reward_position+reward_linear_velocity \
                 +reward_angular_velocity+reward_alive\
-                +reward_quad_z_position #+reward_z_offset
+                # +reward_quad_z_position #+reward_z_offset
         
-        # done= abs(quad_pos[2]) >50 \
-        #         or abs(quad_pos[0]) > 50.0 \
-        #         or abs(quad_pos[1]) > 50.0 \
+        done= abs(quad_pos[2]) >50 \
+                or abs(quad_pos[0]) > 50.0 \
+                or abs(quad_pos[1]) > 50.0 \
+                or ball_pos[2] <= quad_pos[2] -0.5
         #         or ball_pos[2] <= quad_pos[2]
-        done= linalg.norm(quad_pos[0:2]-ball_pos[0:2]) > 0.3 \
-                or ball_pos[2] <= quad_pos[2]
+        # done= linalg.norm(quad_pos[0:2]-ball_pos[0:2]) > 0.3 \
+                # or ball_pos[2] <= quad_pos[2] -0.5
 
         # done= abs(pos[2]) >50 \
         #         or abs(pos[0]) > 50.0 \
@@ -99,7 +100,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #     pos,R.flat,lin_vel,ang_vel])
         if done:
         	#reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
-        	reward = -self.avg_rwd / (1-self.gamma)
+        	reward = -self.avg_rwd / (1-self.gamma)*2
             #print("terminated reward=",reward)
         #return retOb, reward, done, info
         if (self.log_cnt==1e4):
@@ -108,12 +109,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
              self.log_cnt=0
         else: self.log_cnt=self.log_cnt+1
 
-        act_min=[3.5,-1.5,-1.5,-0.3]
-        act_max=[35,1.5,1.5,0.3]
-        action = np.clip(action, a_min=act_min, a_max=act_max)
-        #action = [3.9, 0, 0, 0]
-        self.do_simulation(action, self.frame_skip)
-        ob = self._get_obs()
+        # act_min=[3.5,-1.5,-1.5,-0.3]
+        # act_max=[35,1.5,1.5,0.3]
+        # action = np.clip(action, a_min=act_min, a_max=act_max)
+        # #action = [3.9, 0, 0, 0]
+        # self.do_simulation(action, self.frame_skip)
+        # ob = self._get_obs()
         return ob, reward, done, info
     def print_contact_info(self):
         # print('number of contacts', self.sim.data.ncon)
