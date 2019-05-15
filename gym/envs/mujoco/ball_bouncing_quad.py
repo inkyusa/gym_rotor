@@ -48,13 +48,13 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         quad_ang_vel = ob[17:20]
         ball_vel = ob[20:23]
 
-        print("quad pos=",quad_pos)
-        print("quad_quat=",quad_quat)
-        print("ball_pos=",ball_pos)
-        print("quad_lin_vel=",quad_lin_vel)
-        print("quad_ang_vel=",quad_ang_vel)
-        print("ball_vel=",ball_vel)
-        print("\n\n\n")
+        # print("quad pos=",quad_pos)
+        # print("quad_quat=",quad_quat)
+        # print("ball_pos=",ball_pos)
+        # print("quad_lin_vel=",quad_lin_vel)
+        # print("quad_ang_vel=",quad_ang_vel)
+        # print("ball_vel=",ball_vel)
+        # print("\n\n\n")
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
@@ -77,12 +77,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
         reward = reward_ctrl+reward_position+reward_linear_velocity \
                 +reward_angular_velocity+reward_alive\
-                +reward_quad_z_position #+reward_z_offset
+                #+reward_quad_z_position #+reward_z_offset
         
         done= abs(quad_pos[2]) >50 \
                 or abs(quad_pos[0]) > 50.0 \
                 or abs(quad_pos[1]) > 50.0 \
-                or ball_pos[2] <= quad_pos[2] -0.5
+                # or ball_pos[2] <= quad_pos[2] -0.5
         #         or ball_pos[2] <= quad_pos[2]
         # done= linalg.norm(quad_pos[0:2]-ball_pos[0:2]) > 0.3 \
                 # or ball_pos[2] <= quad_pos[2] -0.5
@@ -184,9 +184,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         pos = self.sim.data.qpos
         vel = self.sim.data.qvel
 
-        print("self.ball_id=",self.ball_id)
-        print("self.core_id=",self.quad_id)
-        print("ball pose=",self.get_body_com("ball"))
+        # print("self.ball_id=",self.ball_id)
+        # print("self.core_id=",self.quad_id)
+        # print("ball pose=",self.get_body_com("ball"))
         
         #self.sim.model.geom_name2id('core')
 
