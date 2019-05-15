@@ -20,9 +20,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.log_cnt=0
         self.z_offset=0.1 #bouncing the ball 30 cm above quad
         self.hit_cnt=0
+        self.ball_id=None
+        self.quad_id=None
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         utils.EzPickle.__init__(self)
-        
+        self.ball_id=self.sim.model.geom_name2id('ball')
+        self.quad_id=self.sim.model.geom_name2id('core')
     def step(self, action):
         mass=self.get_mass()
         #print("mass=",mass[1])
@@ -35,7 +38,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        ob = self._get_obs()
+        print("ob=",ob)
         quad_pos = ob[0:3]
         quad_quat = ob[3:7]
         ball_pos = ob[7:10]
@@ -45,13 +48,23 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         quad_lin_vel = ob[14:17]
         quad_ang_vel = ob[17:20]
         ball_vel = ob[20:23]
+
+        print("quad pos=",quad_pos)
+        print("quad_quat=",quad_quat)
+        print("ball_pos=",ball_pos)
+        print("quad_lin_vel=",quad_lin_vel)
+        print("quad_ang_vel=",quad_ang_vel)
+        print("ball_vel=",ball_vel)
+        print("\n\n\n")
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
         #self.print_contact_info()
         self.checkContact()
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
-        reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
+        #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
+        reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
+        
         # reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
         
         reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
@@ -172,6 +185,13 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # vel = self.sim.data.qvel*1e-2
         pos = self.sim.data.qpos
         vel = self.sim.data.qvel
+
+        print("self.ball_id=",self.ball_id)
+        print("self.core_id=",self.quad_id)
+        print("ball pose=",self.get_body_com("ball"))
+        
+        #self.sim.model.geom_name2id('core')
+
         #print("pos=",pos)
         #print("vel=",vel)
         #del temp_ob[10:14] # orientation of the ball
@@ -209,7 +229,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 4
-        v._run_speed=0.05#0.1 #1
+        v._run_speed=0.01#0.1 #1
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
