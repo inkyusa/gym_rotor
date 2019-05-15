@@ -36,6 +36,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         act_max=[30,0.5,0.7,0.03]
         #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
+        #action = [3.9, 0, 0, 0]
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         quad_pos = ob[0:3]
@@ -48,13 +49,13 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         quad_ang_vel = ob[17:20]
         ball_vel = ob[20:23]
 
-        print("quad pos=",quad_pos)
-        print("quad_quat=",quad_quat)
-        print("ball_pos=",ball_pos)
-        print("quad_lin_vel=",quad_lin_vel)
-        print("quad_ang_vel=",quad_ang_vel)
-        print("ball_vel=",ball_vel)
-        print("\n\n\n")
+        #print("quad pos=",quad_pos)
+        # print("quad_quat=",quad_quat)
+        # print("ball_pos=",ball_pos)
+        # print("quad_lin_vel=",quad_lin_vel)
+        # print("quad_ang_vel=",quad_ang_vel)
+        # print("ball_vel=",ball_vel)
+        # print("\n\n\n")
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
@@ -75,9 +76,12 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         reward_alive = 1e-1
         #reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive #+reward_z_offset
-        reward = reward_ctrl+reward_position+reward_linear_velocity \
+        #reward = reward_ctrl+reward_position+reward_linear_velocity \
+        #        +reward_angular_velocity+reward_alive\
+                #+reward_quad_z_position #+reward_z_offset
+        reward = reward_ctrl+reward_bouncing_bonus+reward_linear_velocity \
                 +reward_angular_velocity+reward_alive\
-                +reward_quad_z_position #+reward_z_offset
+                #+reward_quad_z_position #+reward_z_offset
         
         done= abs(quad_pos[2]) >50 \
                 or abs(quad_pos[0]) > 50.0 \
@@ -126,6 +130,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # #action = [3.9, 0, 0, 0]
         # self.do_simulation(action, self.frame_skip)
         # ob = self._get_obs()
+        #print("reward=",reward)
         return ob, reward, done, info
     def print_contact_info(self):
         # print('number of contacts', self.sim.data.ncon)
@@ -171,8 +176,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                 if (geom1_name=='core' and geom2_name=='ball') or (geom1_name=='ball' and geom2_name=='core'):
                     c_array = np.zeros(6, dtype=np.float64)
                     mujoco_py.functions.mj_contactForce(self.sim.model, self.sim.data, i, c_array)
-                    #print('c_array', c_array)
-                    if c_array[0]>6 and c_array[1] < 3e-2 and c_array[2] < 3e-2:
+                    print('c_array', c_array)
+                    if c_array[0]>4 and c_array[1] < 3e-3 and c_array[2] < 3e-3:
                         #print("============ball collided=======")
                         self.hit_cnt+=1
                         #print("self.hit_cnt=",self.hit_cnt)
@@ -184,9 +189,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         pos = self.sim.data.qpos
         vel = self.sim.data.qvel
 
-        print("self.ball_id=",self.ball_id)
-        print("self.core_id=",self.quad_id)
-        print("ball pose=",self.get_body_com("ball"))
+        # print("self.ball_id=",self.ball_id)
+        # print("self.core_id=",self.quad_id)
+        # print("ball pose=",self.get_body_com("ball"))
         
         #self.sim.model.geom_name2id('core')
 
@@ -205,10 +210,10 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
         # qpos = np.concatenate([pos,quat])
         # qvel = np.concatenate([linVel,angVel])
-        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
-        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
-        #qpos = self.init_qpos 
-        #qvel = self.init_qvel
+        # qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
+        # qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        qpos = self.init_qpos 
+        qvel = self.init_qvel
 
         #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
