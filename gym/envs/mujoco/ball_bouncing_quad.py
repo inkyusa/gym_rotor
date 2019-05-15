@@ -88,7 +88,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         done= abs(quad_pos[2]) >50 \
                 or abs(quad_pos[0]) > 50.0 \
                 or abs(quad_pos[1]) > 50.0 \
-                # or ball_pos[2] <= quad_pos[2] -0.5
+                or ball_pos[2] <= quad_pos[2] -0.5
         #         or ball_pos[2] <= quad_pos[2]
         # done= linalg.norm(quad_pos[0:2]-ball_pos[0:2]) > 0.3 \
                 # or ball_pos[2] <= quad_pos[2] -0.5
