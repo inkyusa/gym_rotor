@@ -36,7 +36,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         act_max=[30,0.5,0.7,0.03]
         #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
-        #action = [3.9, 0, 0, 0]
+        action = [3.9, 0, 0, 0]
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         quad_pos = ob[0:3]
@@ -67,13 +67,17 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
         reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
         
-        # reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
         reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
         # if (ball_pos[2]-quad_pos[2] > self.z_offset):
         #     reward_bouncing_bonus = 5e-1
         # else: reward_bouncing_bonus = 0
-        reward_bouncing_bonus = self.hit_cnt*5e-1
+        if (self.hit_cnt>0):
+            reward_bouncing_bonus = 5e-1
+        else: reward_bouncing_bonus = 0
+        #print("self.hit_cnt=",self.hit_cnt)
+
         #reward_z_offset = 1/((ball_pos[2]-quad_pos[2])-self.z_offset)
 
         reward_alive = 1e-1
@@ -81,8 +85,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_linear_velocity \
         #        +reward_angular_velocity+reward_alive\
                 #+reward_quad_z_position #+reward_z_offset
-        reward = reward_ctrl+reward_bouncing_bonus+reward_linear_velocity \
-                +reward_angular_velocity+reward_alive\
+        reward = reward_ctrl+reward_position+reward_bouncing_bonus+reward_linear_velocity \
+                +reward_angular_velocity+reward_alive+reward_quad_z_position\
                 #+reward_quad_z_position #+reward_z_offset
         
         done= abs(quad_pos[2]) >50 \
@@ -117,7 +121,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #     pos,R.flat,lin_vel,ang_vel])
         if done:
         	#reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
-        	reward = -self.avg_rwd / (1-self.gamma)*2
+        	#reward = -self.avg_rwd / (1-self.gamma)*2
+            reward = -100
             #print("terminated reward=",reward)
         #return retOb, reward, done, info
         if (self.log_cnt==1e4):
@@ -178,7 +183,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                 if (geom1_name=='core' and geom2_name=='ball') or (geom1_name=='ball' and geom2_name=='core'):
                     c_array = np.zeros(6, dtype=np.float64)
                     mujoco_py.functions.mj_contactForce(self.sim.model, self.sim.data, i, c_array)
-                    print('c_array', c_array)
+                    #print('c_array', c_array)
                     if c_array[0]>4 and c_array[1] < 3e-3 and c_array[2] < 3e-3:
                         #print("============ball collided=======")
                         self.hit_cnt+=1
@@ -212,10 +217,10 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
         # qpos = np.concatenate([pos,quat])
         # qvel = np.concatenate([linVel,angVel])
-        # qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
-        # qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
-        qpos = self.init_qpos 
-        qvel = self.init_qvel
+        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
+        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        #qpos = self.init_qpos 
+        #qvel = self.init_qvel
 
         #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
         #qpos = self.init_qpos
