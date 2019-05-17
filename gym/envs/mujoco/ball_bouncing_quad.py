@@ -68,7 +68,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
         reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
         
-        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+        reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
         #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         #reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
         # if (ball_pos[2]-quad_pos[2] > self.z_offset):
