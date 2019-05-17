@@ -193,7 +193,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                         #print("============ball collided=======")
                         self.hit_cnt+=1
                         #print("self.hit_cnt=",self.hit_cnt)
-                else if (geom1_name=='core' and geom2_name=='floor') or (geom1_name=='floor' and geom2_name=='core'):
+                elif (geom1_name=='core' and geom2_name=='floor') or (geom1_name=='floor' and geom2_name=='core'):
                     self.quad_hit_floor=True
 
 
@@ -247,7 +247,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 4
-        v._run_speed=0.01#0.1 #1
+        v._run_speed=1#0.01#0.1 #1
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
