@@ -89,7 +89,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_bouncing_bonus+reward_linear_velocity \
         #        +reward_angular_velocity+reward_alive+reward_quad_z_position\
         reward = reward_ctrl+reward_position+reward_bouncing_bonus \
-                +reward_alive+reward_quad_z_position\
+                +reward_alive+reward_ball_z_position\
         
                 #+reward_quad_z_position #+reward_z_offset
         
