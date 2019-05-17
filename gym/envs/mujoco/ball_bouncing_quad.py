@@ -22,6 +22,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.hit_cnt=0
         self.ball_id=None
         self.quad_id=None
+        self.quad_hit_floor=False
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         utils.EzPickle.__init__(self)
         self.ball_id=self.sim.model.geom_name2id('ball')
@@ -36,7 +37,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         act_max=[30,0.5,0.7,0.03]
         #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
-        action = [3.9, 0, 0, 0]
+        #action = [3.9, 0, 0, 0]
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         quad_pos = ob[0:3]
@@ -95,7 +96,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         done= abs(quad_pos[2]) >50 \
                 or abs(quad_pos[0]) > 50.0 \
                 or abs(quad_pos[1]) > 50.0 \
-                or ball_pos[2] <= quad_pos[2] -0.5
+                or ball_pos[2] <= quad_pos[2] -0.5\
+                or self.quad_hit_floor
         #         or ball_pos[2] <= quad_pos[2]
         # done= linalg.norm(quad_pos[0:2]-ball_pos[0:2]) > 0.3 \
                 # or ball_pos[2] <= quad_pos[2] -0.5
@@ -191,6 +193,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                         #print("============ball collided=======")
                         self.hit_cnt+=1
                         #print("self.hit_cnt=",self.hit_cnt)
+                else if (geom1_name=='core' and geom2_name=='floor') or (geom1_name=='floor' and geom2_name=='core'):
+                    self.quad_hit_floor=True
 
 
     def _get_obs(self):
@@ -214,6 +218,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.hit_cnt=0
+        self.quad_hit_floor=False
         # pos = self.np_random.uniform(size=3, low=-20, high=20)
         # quat = self.np_random.uniform(size=4, low=-1, high=1)
         # linVel = self.np_random.uniform(size=3, low=-2, high=2)
