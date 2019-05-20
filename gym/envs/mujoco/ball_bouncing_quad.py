@@ -23,7 +23,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.ball_id=None
         self.quad_id=None
         self.quad_hit_floor=False
+        #mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad_fancy.xml', 5)
         mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
+        
         utils.EzPickle.__init__(self)
         self.ball_id=self.sim.model.geom_name2id('ball')
         self.quad_id=self.sim.model.geom_name2id('core')
@@ -35,8 +37,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #print("gamma=",self.gamma)
         #act_min=[3.5,-0.5,-0.7,-0.03]
         #act_max=[30,0.5,0.7,0.03]
-        #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-        action = np.clip(action, a_min=act_min, a_max=act_max)
+        action = np.clip(action, a_min=-np.inf, a_max=np.inf)
+        #action = np.clip(action, a_min=act_min, a_max=act_max)
         #action = [3.9, 0, 0, 0]
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
@@ -229,6 +231,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # qvel = np.concatenate([linVel,angVel])
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.5, high=0.5)
         qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.1, high=0.1)
+        #qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
+        #qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        
         #qpos = self.init_qpos 
         #qvel = self.init_qvel
 
