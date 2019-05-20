@@ -1,10 +1,26 @@
 <mujoco model="quadrotor0">
 	<compiler inertiafromgeom="true" coordinate="local"/>
 	<option	timestep="0.001" gravity="0 0 -9.81" density="1" viscosity="1e-5" />
+    <visual>
+        <map fogstart="3" fogend="5" force="0.1" znear="0.1"/>
+        <quality shadowsize="2048"/>
+        <global offwidth="800" offheight="800"/>
+    </visual>
+    <asset>
+        <texture type="skybox" builtin="gradient" width="128" height="128" rgb1=".4 .6 .8" 
+            rgb2="0 0 0"/>  
+        <texture name="texgeom" type="cube" builtin="flat" mark="cross" width="127" height="1278" 
+            rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>  
+        <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" 
+            width="512" height="512"/>  
+        <material name='MatPlane' reflectance='0.5' texture="texplane" texrepeat="1 1" texuniform="true"/>
+        <material name='geom' texture="texgeom" texuniform="true"/>
+    </asset>
 	<worldbody>
-		<geom name="floor" pos="0 0 -4" size="2 2 .2" type="plane"  conaffinity="1" rgba="1 1 1 1" condim="3"/>
-		<body name="quadrotor" pos="0 0 -2">
-			<geom name="core" type="box" pos="0 0 0" quat = "1. 0. 0. 0" size="0.06 0.035 0.025"  rgba="0.3 0.3 0.8 1" mass = ".2"/>
+        <light directional='true' diffuse='.8 .8 .8' specular='0.3 0.3 0.3' pos='0 0 4.0' dir='0 -.15 -1'/>
+		<geom name="floor" pos="0 0 -4" size="2 2 .2" type="plane" material="MatPlane" conaffinity="1" rgba="1 1 1 1" condim="3"/>
+		<body name="quadrotor" pos="1 0 0">
+			<geom name="core" type="box" pos="0 0 0" quat = "1. 0. 0. 0" size="0.035 0.035 0.035"  rgba="1 1 1 0.7" mass = ".4"/>
 
 			<geom name="a00" type="box" pos=".071 0.071 0.0" size="0.05 0.01 0.0025"  quat = ".924 0.0 0.0 0.383" rgba="1 1 1 0.7" mass = ".025"/>
 			<geom name="a10" type="box" pos=".071 -0.071 0.0" size="0.05 0.01 0.0025"  quat = ".383 0.0 0.0 0.924" rgba="1 1 1 0.7" mass = ".025"/>

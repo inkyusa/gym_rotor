@@ -18,6 +18,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
         mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
+        #mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat_fancy.xml', 5)
         utils.EzPickle.__init__(self)
     def step(self, action):
         mass=self.get_mass()
@@ -41,11 +42,11 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #R=self.quat2mat(quat.transpose())
         #rpy = self.RotToRPY(R)
         #print("rpy(degrees) =",np.rad2deg(rpy))
-        reward_ctrl = - 0.1e-3 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-2
-        reward_linear_velocity = -linalg.norm(lin_vel) * 0.1e-3
-        reward_angular_velocity = -linalg.norm(ang_vel) * 0.1e-3
-        reward_alive = 1e-2
+        reward_ctrl = - 1e-4 * np.sum(np.square(action))
+        reward_position = -linalg.norm(pos) * 1e-1
+        reward_linear_velocity = -linalg.norm(lin_vel) * 1e-2
+        reward_angular_velocity = -linalg.norm(ang_vel) * 1e-3
+        reward_alive = 1e-1
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
@@ -108,8 +109,13 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def viewer_setup(self):
         v = self.viewer
-        v.cam.trackbodyid = 0
+        v.cam.trackbodyid = 1
         v.cam.distance = self.model.stat.extent * 4
+        v.cam.azimuth = 132.
+        #v.cam.lookat[2] += .8
+        #v.cam.elevation = 0
+        #v.cam.lookat[0] += 1.5
+        v.cam.elevation +=0.9
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
