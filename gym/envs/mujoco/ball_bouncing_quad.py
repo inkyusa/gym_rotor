@@ -18,12 +18,14 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
-        self.z_offset=0.1 #bouncing the ball 30 cm above quad
+        self.z_offset=0.3 #bouncing the ball 30 cm above quad
         self.hit_cnt=0
         self.ball_id=None
         self.quad_id=None
         self.quad_hit_floor=False
-        mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
+        mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad_fancy.xml', 5)
+        #mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
+        
         utils.EzPickle.__init__(self)
         self.ball_id=self.sim.model.geom_name2id('ball')
         self.quad_id=self.sim.model.geom_name2id('core')
@@ -33,8 +35,10 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #temp_thrust= 
         #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
         #print("gamma=",self.gamma)
-        act_min=[3.5,-0.5,-0.7,-0.03]
-        act_max=[30,0.5,0.7,0.03]
+        # act_min=[3.5,-0.5,-0.7,-0.03]
+        # act_max=[30,0.5,0.7,0.03]
+        act_min=[3.5,-1.7,-1.7,-0.1]
+        act_max=[45,1.7,1.7,0.1]
         #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
         #action = [3.9, 0, 0, 0]
@@ -68,7 +72,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
         reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
         
-        reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
+        #reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
+        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+
         #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         #reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
         # if (ball_pos[2]-quad_pos[2] > self.z_offset):
@@ -89,8 +95,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_bouncing_bonus+reward_linear_velocity \
         #        +reward_angular_velocity+reward_alive+reward_quad_z_position\
         reward = reward_ctrl+reward_position+reward_bouncing_bonus \
-                +reward_alive+reward_ball_z_position\
-        
+                +reward_alive+reward_quad_z_position\
+                +reward_alive
                 #+reward_quad_z_position #+reward_z_offset
         
         done= abs(quad_pos[2]) >50 \
@@ -227,6 +233,9 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # qvel = np.concatenate([linVel,angVel])
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
         qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        #qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.05, high=0.05)
+        #qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.01, high=0.01)
+        
         #qpos = self.init_qpos 
         #qvel = self.init_qvel
 
@@ -247,7 +256,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 4
-        v._run_speed=1#0.01#0.1 #1
+        v._run_speed=0.1#0.01#0.1 #1
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
