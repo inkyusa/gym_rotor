@@ -18,7 +18,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
-        self.z_offset=0.1 #bouncing the ball 30 cm above quad
+        self.z_offset=0.3 #bouncing the ball 30 cm above quad
         self.hit_cnt=0
         self.ball_id=None
         self.quad_id=None
@@ -72,7 +72,11 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
         reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
         
-        reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
+        if (ball_pos[2]-quad_pos[2])==self.z_offset:
+            reward_ball_offset = 10
+        else:
+            reward_ball_offset = 0
+        #reward_ball_offset = (ball_pos[2]-quad_pos[2]-self.z_offset) * 1e-1
         #reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
 
         #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
@@ -95,7 +99,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_bouncing_bonus+reward_linear_velocity \
         #        +reward_angular_velocity+reward_alive+reward_quad_z_position\
         reward = reward_ctrl+reward_position+reward_bouncing_bonus \
-                +reward_alive+reward_ball_z_position\
+                +reward_alive+reward_ball_offset\
         
                 #+reward_quad_z_position #+reward_z_offset
         
