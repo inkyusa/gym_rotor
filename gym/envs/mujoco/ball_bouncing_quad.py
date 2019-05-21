@@ -23,8 +23,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.ball_id=None
         self.quad_id=None
         self.quad_hit_floor=False
-        #mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad_fancy.xml', 5)
-        mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
+        mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad_fancy.xml', 5)
+        #mujoco_env.MujocoEnv.__init__(self, 'ball_bouncing_quad.xml', 5)
         
         utils.EzPickle.__init__(self)
         self.ball_id=self.sim.model.geom_name2id('ball')
@@ -72,8 +72,8 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward_position = - ( linalg.norm(quad_pos[0:2]-ball_pos[0:2])+linalg.norm(quad_pos[2])) * 1e-1
         reward_position = - linalg.norm(quad_pos[0:2]-ball_pos[0:2])* 1e-1
         
-        reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
-        #reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
+        #reward_ball_z_position = -linalg.norm(ball_pos[2]) * 1e-1
+        reward_quad_z_position = -linalg.norm(quad_pos[2]) * 1e-1
 
         #reward_linear_velocity = -linalg.norm(quad_lin_vel) * 1e-2
         #reward_angular_velocity = -linalg.norm(quad_ang_vel) * 1e-3
@@ -95,7 +95,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         #reward = reward_ctrl+reward_position+reward_bouncing_bonus+reward_linear_velocity \
         #        +reward_angular_velocity+reward_alive+reward_quad_z_position\
         reward = reward_ctrl+reward_position+reward_bouncing_bonus \
-                +reward_alive+reward_ball_z_position\
+                +reward_alive+reward_quad_z_position\
         
                 #+reward_quad_z_position #+reward_z_offset
         
@@ -256,7 +256,7 @@ class BallBouncingQuadEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         v = self.viewer
         v.cam.trackbodyid = 0
         v.cam.distance = self.model.stat.extent * 4
-        v._run_speed=0.5#0.01#0.1 #1
+        v._run_speed=0.1#0.01#0.1 #1
     def get_mass(self):
         mass = np.expand_dims(self.model.body_mass, axis=1)
         return mass
