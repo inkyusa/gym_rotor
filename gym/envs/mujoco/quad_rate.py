@@ -17,8 +17,8 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
-        mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
-        #mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat_fancy.xml', 5)
+        #mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
+        mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat_fancy.xml', 5)
         utils.EzPickle.__init__(self)
     def step(self, action):
         mass=self.get_mass()
@@ -52,7 +52,7 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
         # print("status=",status)
-        print("pos=",pos)
+        #print("pos=",pos)
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
