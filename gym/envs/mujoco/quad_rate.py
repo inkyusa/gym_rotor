@@ -1,3 +1,37 @@
+# **********************************************************************
+#
+# Copyright (c) 2019, Autonomous Systems Lab
+# Author: Inkyu Sa <enddl22@gmail.com>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+# 3. Neither the name PX4 nor the names of its contributors may be
+#    used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+# OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+# AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# *************************************************************************
+
 import numpy as np
 from numpy import linalg
 from gym import utils
@@ -5,43 +39,28 @@ import os
 from gym.envs.mujoco import mujoco_env
 import math
 
-#from gym_reinmav.envs.mujoco import MujocoQuadEnv
-
 # For testing whether a number is close to zero
 _FLOAT_EPS = np.finfo(np.float64).eps
 _EPS4 = _FLOAT_EPS * 4.0
 
 class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
-        #xml_path = os.path.join(os.path.dirname(__file__), "./assets", 'half_cheetah.xml')
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
-        #mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat.xml', 5)
         mujoco_env.MujocoEnv.__init__(self, 'quadrotor_quat_fancy.xml', 5)
         utils.EzPickle.__init__(self)
     def step(self, action):
         mass=self.get_mass()
-        #print("mass=",mass[1])
-        #temp_thrust= 
-        #action[0] += mass[1]*9.81 #gravity compensation, 0.4*9.81=3.92
-        #print("gamma=",self.gamma)
         act_min=[3.5,-0.5,-0.7,-0.03]
         act_max=[30,0.5,0.7,0.03]
-    #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         pos = ob[0:3]
-        #R = ob[3:12]
-        #lin_vel = ob[12:15]
-        #ang_vel= ob[15:18]
         quat = ob[3:7]
         lin_vel = ob[7:10]
         ang_vel = ob[10:13]
-        #R=self.quat2mat(quat.transpose())
-        #rpy = self.RotToRPY(R)
-        #print("rpy(degrees) =",np.rad2deg(rpy))
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
         reward_position = -linalg.norm(pos) * 1e-1
         reward_linear_velocity = -linalg.norm(lin_vel) * 1e-2
@@ -51,8 +70,6 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         done= abs(pos[2]) >50 \
                 or abs(pos[0]) > 50.0 \
                 or abs(pos[1]) > 50.0
-        # print("status=",status)
-        #print("pos=",pos)
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
@@ -65,12 +82,8 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             'obvy': lin_vel[1],
             'obvz': lin_vel[2],
         }
-        # retOb= np.concatenate([
-        #     pos,R.flat,lin_vel,ang_vel])
         if done:
         	reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
-        	#print("terminated reward=",reward)
-        #return retOb, reward, done, info
         if (self.log_cnt==1e4):
              print("x={},y={},z={}\n".format(pos[0],pos[1],pos[2]))
              print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
@@ -79,30 +92,13 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return ob, reward, done, info
 
     def _get_obs(self):
-        # pos = self.sim.data.qpos*1e-1
-        # vel = self.sim.data.qvel*1e-2
         pos = self.sim.data.qpos*1e-0
         vel = self.sim.data.qvel*1e-0
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
-        # pos = self.np_random.uniform(size=3, low=-20, high=20)
-        # quat = self.np_random.uniform(size=4, low=-1, high=1)
-        # linVel = self.np_random.uniform(size=3, low=-2, high=2)
-        # angVel = self.np_random.uniform(size=3, low=-0.5, high=0.5)
-        # qpos = np.concatenate([pos,quat])
-        # qvel = np.concatenate([linVel,angVel])
         qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1, high=0.1)
         qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05, high=0.05)
-        #qpos[0:3] += self.np_random.uniform(low=-5, high=5, size=3)
-        #qpos = self.init_qpos
-        #qpos[0:3] = qpos[0:3]+self.np_random.uniform(size=3, low=-10, high=10)
-
-        #ob[3:12] = self.np_random.uniform(size=9, low=-1, high=1)
-        #qvel += self.np_random.uniform(size=6, low=-0.5, high=0.5)
-        #qvel[0:3] = self.np_random.uniform(size=3, low=-2, high=2)
-        #qvel[3:6] = self.np_random.uniform(size=3, low=-0.5, high=0.5)
-
         self.set_state(qpos, qvel)
         observation = self._get_obs();
         return observation
@@ -152,91 +148,3 @@ class QuadRateEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         psi = math.atan2(-R[1,0]/math.cos(phi),R[1,1]/math.cos(phi))
         theta = math.atan2(-R[0,2]/math.cos(phi),R[2,2]/math.cos(phi))
         return phi,theta,psi
-
-    # def __init__(self, xml_name="quadrotor_quat.xml"):
-    #     super(MujocoQuadQuaternionEnv, self).__init__(xml_name=xml_name)
-
-    # def step(self, action):
-    #     goal_pos = np.array([0.0, 0.0, 1.0])
-    #     alive_bonus = 1e1
-    #     xposbefore = self.sim.data.qpos[0]
-    #     self.do_simulation(action, self.frame_skip)
-    #     xposafter = self.sim.data.qpos[0]
-    #     ob = self._get_obs()
-    #     pos = ob[0:3]
-    #     quat = ob[3:7] 
-    #     lin_vel = ob[7:10]
-    #     ang_vel= ob[10:13]
-    #     lin_acc = ob[13:16]
-    #     ang_acc = ob[16:19]
-    #     #print("step a=",a)
-        
-
-    #     #reward_position = -linalg.norm(pos-goal_pos) * 0.2e-1 
-    #     reward_position = -linalg.norm(pos) * 0.2e-1 
-    #     reward_linear_velocity = -linalg.norm(lin_vel) * 1e-3 
-    #     reward_angular_velocity = -linalg.norm(ang_vel) * 1e-1
-    #     reward_action = -linalg.norm(action)+np.sum(action)*1e-1
-    #     reward_alive = alive_bonus
-
-    #     # reward = reward_position \
-    #     #          + reward_linear_velocity \
-    #     #          + reward_angular_velocity \
-    #     #          + reward_action \
-    #     #          + reward_alive
-    #     reward_ctrl = - 0.1 * np.square(action).sum()
-    #     reward_run = (xposafter - xposbefore)/self.dt
-    #     #print("r_ctrl=",reward_ctrl)
-    #     #print("r_run=",reward_run)
-    #     reward = reward_ctrl + reward_run
-
-    #     # notdone = np.isfinite(ob).all() \
-    #     #           and pos[2] > 0.3 \
-    #     #           and abs(pos[0]) < 2.0 \
-    #     #           and abs(pos[1]) < 2.0
-    #     notdone = np.isfinite(ob).all() \
-    #               and abs(pos[0]) < 2.0 \
-    #               and abs(pos[1]) < 2.0
-
-    #     # info = {
-    #     #   'rp': reward_position,
-    #     #   'rlv': reward_linear_velocity,
-    #     #   'rav': reward_angular_velocity,
-    #     #   'ra': reward_action,
-    #     #   'rlive': reward_alive,
-    #     # }
-    #     # info = {
-    #     #   'rp': reward_position,
-    #     #   'rlv': reward_linear_velocity,
-    #     #   'rav': reward_ctrl,
-    #     #   'ra': reward_action,
-    #     #   'rlive': reward_run,
-    #     # }
-    #     info=dict(reward_run=reward_run, reward_ctrl=reward_ctrl)
-
-
-    #     #if done=True indicates the episode has terminated and it's time to reset the environment. (For example, perhaps the pole tipped too far, or you lost your last life.) https://gym.openai.com/docs/
-    #     #done = not notdone
-    #     done = False
-    #     return ob, reward, done, info
-
-    # def reset_model(self):
-    #     #If reset, then we add some variations to the initial state that will be exploited for the next ep. The low and high bounds empirically set.
-    #     qpos=self.init_qpos
-    #     qvel=self.init_qvel
-    #     qpos[0:3] +=self.np_random.uniform(size=3, low=-0.1, high=0.1)
-    #     qvel[0:3] +=self.np_random.uniform(size=3, low=-0.01, high=0.01)
-    #     self.set_state(qpos, qvel)
-    #     return self._get_obs()
-
-    # def clip_action(self, action):
-    #     """
-    #     clip action to [0, inf]
-    #     :param action:
-    #     :return: clipped action
-    #     """
-    #     act_min=[0,-0.5,-0.5,-0.5]
-    #     act_max=[7,0.5,0.5,0.5]
-    #     #action = np.clip(action, a_min=-np.inf, a_max=np.inf)
-    #     action = np.clip(action, a_min=act_min, a_max=act_max)
-    #     return action
