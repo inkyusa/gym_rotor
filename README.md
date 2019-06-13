@@ -97,4 +97,24 @@ source ./train_bbq_script_module.sh
 ```
 
 ## 3. Deploying the trained weight to real-world
-WIP...but you can have a look our previous [work] (https://arxiv.org/abs/1707.05110) on Control of a Quadrotor with Reinforcement Learning (i.e., outputting direct rotor speed commands instead rate command). Please stay tune and we will update once we have some interesting results.
+WIP...but you can have a look our previous [work](https://arxiv.org/abs/1707.05110) on Control of a Quadrotor with Reinforcement Learning (i.e., outputting direct rotor speed commands instead rate command). Please stay tune and we will update once we have some interesting results.
+
+## Publications
+If our work helps your works in an academic/research context, please cite the following publication(s):
+
+* Jemin Hwangbo, Inkyu Sa, Roland Siegwart, Marco Hutter, **"Control of a Quadrotor with Reinforcement Learning"**, 2017, [IEEE Robotics and Automation Letters](https://ieeexplore.ieee.org/document/7961277) or ([arxiv pdf](https://arxiv.org/abs/1707.05110))
+
+```bibtex
+@ARTICLE{7961277, 
+author={J. {Hwangbo} and I. {Sa} and R. {Siegwart} and M. {Hutter}}, 
+journal={IEEE Robotics and Automation Letters}, 
+title={Control of a Quadrotor With Reinforcement Learning}, 
+year={2017}, 
+volume={2}, 
+number={4}, 
+pages={2096-2103}, 
+keywords={aircraft control;helicopters;learning systems;neurocontrollers;stability;step response;quadrotor control;reinforcement learning;neural network;step response;stabilization;Trajectory;Junctions;Learning (artificial intelligence);Computational modeling;Neural networks;Robots;Optimization;Aerial systems: mechanics and control;learning and adaptive systems}, 
+doi={10.1109/LRA.2017.2720851}, 
+ISSN={2377-3766}, 
+month={Oct},}
+```
