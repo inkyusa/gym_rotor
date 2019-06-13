@@ -18,7 +18,7 @@ You also need the following repos for testing and training these environments.
 * https://github.com/inkyusa/openai_train_scripts
 
 
-## 1. Controlling a quadrotor using rate command (rate control)
+## 1. Continuous control a quadrotor via rate commands (rate control)
 The animation below is what you can expect after training your rate control model. Rate control implies that we command `body-rate` for 3 axes; roll (rotating along x-axis which is forward direction of the vehicle), pitch (rotating along y-axis which is left), and yaw (rotating along z-axis which is up); <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{u}=[u_{\dot{x}},u_{\dot{y}},u_{\dot{z}},u_{T}]^{T}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{u}=[u_{\dot{x}},u_{\dot{y}},u_{\dot{z}},u_{T}]^{T}" title="\large \boldsymbol{u}=[u_{\dot{x}},u_{\dot{y}},u_{\dot{z}},u_{T}]^{T}" /></a>. The units are `rad/s` for rates and [0,1] for thrust.
 
 The task of this environment is very simple that we provide a goal position, <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{p^{*}}=[x,y,z]^{T}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{p^{*}}=[x,y,z]^{T}" title="\large \boldsymbol{p^{*}}=[x,y,z]^{T}" /></a> and a policy is trained to minimize goal to vehicle distance (i.e., maximize cumulative reward). For the detail for reward shaping, please have a look [here](https://github.com/inkyusa/gym_rotor/blob/ac843fe34d6c5e316a0ae2d8143be22e4298864b/gym/envs/mujoco/quad_rate.py#L69). For training, we use PPO2 provided from [stable-baselines](https://github.com/inkyusa/stable-baselines). In summary, we have 4 input commands, <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{u}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{u}" title="\large \boldsymbol{u}" /></a>, and 13 observations, <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{o}=[\bold{p},\bold{q},\bold{v},\bold{\omega}]^{T}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{o}=[\bold{p},\bold{q},\bold{v},\bold{\omega}]^{T}" title="\large \boldsymbol{o}=[\bold{p},\bold{q},\bold{v},\bold{\omega}]^{T}" /></a>. Note that <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\bold{q}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\bold{q}" title="\large \bold{q}" /></a> is unit quaternion (4x1) and others are correspondence to position, linear-, angular-velocity respectively (3x1).
@@ -68,7 +68,7 @@ Analogous to above testing, training can be easily done if you already installed
 source ./train_rateQuad_script_module.sh
 ```
 
-## 2. Bouncing ball quadrotor (BBQ)
+## 2. Ball Bouncing Quadrotor (BBQ)
 This environment is minor extension of the privous environment such is rate control. We introduce a ball above the vehicle and shape the reward in the way of hitting the ball at the center of the vehicle. Below animation demonstartes this.
 
 <p align="center">  <img src="http://drive.google.com/uc?export=view&id=1JAVMOKZne7Zxp7ALkqSqmFC9MF607xPd" width="550" /> </p>
