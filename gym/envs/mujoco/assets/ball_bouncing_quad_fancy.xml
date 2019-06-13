@@ -1,3 +1,4 @@
+<!-- written by Inkyu Sa, enddl22@gmail.com -->
 <mujoco model="bbq">
     <compiler inertiafromgeom="auto" coordinate="local"/>
     <option timestep='0.001' iterations="50" solver="PGS" gravity="0 0 -9.81" density="1" viscosity="1e-5">

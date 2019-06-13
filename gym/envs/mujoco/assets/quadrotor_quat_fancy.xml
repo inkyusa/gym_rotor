@@ -1,3 +1,7 @@
+<!-- written by Inkyu Sa, enddl22@gmail.com -->
+<!-- and Dongho Kang <eastsky.kang@gmail.com> -->
+
+
 <mujoco model="quadrotor0">
 	<compiler inertiafromgeom="true" coordinate="local"/>
 	<option	timestep="0.001" gravity="0 0 -9.81" density="1" viscosity="1e-5" />
