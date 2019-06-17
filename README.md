@@ -35,7 +35,7 @@ We provide a pre-trained weight and you can obtain it from another [repository](
 ```shell
 source ./rateQuad_test_script.sh ./model
 ```
-You should be able to see the same animation we saw earlier.
+You should be able to see the same animation we saw earlier. Please note that you need to change system dependent variables (e.g., `RL_BASELINES_ZOO_PATH`) as of yours.
 #### 1.1.1 What does the policy learn?
 As we can see from the above animation, our agent is able to fly to the goal and hover at that position. In order to do this task, the policy has to learn underlying `attitude` and `position` controllers. The former governs to control attitudes of the vehicle which are roll, pitch, and yaw angles and the latter deals with regulating position (i.e., tracking position error and minimiing it). 
 
@@ -67,6 +67,8 @@ Analogous to above testing, training can be easily done if you already installed
 ```shell
 source ./train_rateQuad_script_module.sh
 ```
+Please note that you need to change system dependent variables (e.g., `RL_BASELINES_ZOO_PATH`, `--tensorboard-log`, `--log-folder`, and
+`lockFile`) as of yours.
 
 ## 2. Ball Bouncing Quadrotor (BBQ)
 This environment is minor extension of the privous environment such is rate control. We introduce a ball above the vehicle and shape the reward in the way of hitting the ball at the center of the vehicle. Below animation demonstartes this.
