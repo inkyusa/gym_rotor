@@ -88,7 +88,7 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
              self.log_cnt=0
         else: self.log_cnt=self.log_cnt+1
         return ob, reward, done, info
-	def _get_obs(self):
+    def _get_obs(self):
         pos = self.sim.data.qpos*1e-0
         vel = self.sim.data.qvel*1e-0
         return np.concatenate([pos.flat,vel.flat])
