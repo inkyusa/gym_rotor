@@ -50,9 +50,9 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         mass=self.get_mass()
-        #act_min=[3.5,-0.5,-0.7,-0.03]
-        #act_max=[30,0.5,0.7,0.03]
-        #action = np.clip(action, a_min=act_min, a_max=act_max)
+        act_min=[0, 0, 0, 0]
+        act_max=[1, 1, 1, 1,]
+        action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         pos = ob[0:3]
