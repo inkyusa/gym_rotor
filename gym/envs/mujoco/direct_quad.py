@@ -65,9 +65,9 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward_angular_velocity = -linalg.norm(ang_vel) * 1e-3
         reward_alive = 1e-1
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
-        done= abs(pos[2]) >50 \
-                or abs(pos[0]) > 50.0 \
-                or abs(pos[1]) > 50.0
+        done= abs(pos[2]) >3 \
+                or abs(pos[0]) > 3.0 \
+                or abs(pos[1]) > 3.0
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
@@ -81,7 +81,7 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             'obvz': lin_vel[2],
         }
         if done:
-        	reward = self.avg_rwd / (1-self.gamma)*2#-13599.99
+        	reward = -100 #self.avg_rwd / (1-self.gamma)*2#-13599.99
         if (self.log_cnt==1e4):
              print("x={},y={},z={}\n".format(pos[0],pos[1],pos[2]))
              print("thrust={}, dx={}, dy={}, dz={}".format(action[0],action[1],action[2],action[3]))
