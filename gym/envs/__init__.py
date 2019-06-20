@@ -268,6 +268,12 @@ register(
 )
 
 register(
+    id='QuadDirect-v0',
+    entry_point='gym.envs.mujoco:QuadDirectEnv',
+    max_episode_steps=8000,
+    reward_threshold=9600.0,
+)
+register(
     id='BallBouncingQuad-v0',
     entry_point='gym.envs.mujoco:BallBouncingQuadEnv',
     max_episode_steps=8000,
