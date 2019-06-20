@@ -34,9 +34,9 @@
 		</body>
 	</worldbody>
     <actuator>
-		<motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0. -0.1" site="motor0"/>
-        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0.  0.1" site="motor1"/>
-        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0. -0.1" site="motor2"/>
-        <motor ctrllimited="true" ctrlrange="0.0 1.0" gear="0  0. 1. 0. 0.  0.1" site="motor3"/>
+		<motor ctrllimited="true" ctrlrange="0.0 5.0" gear="0  0. 1. 0. 0. -0.1" site="motor0"/>
+        <motor ctrllimited="true" ctrlrange="0.0 5.0" gear="0  0. 1. 0. 0.  0.1" site="motor1"/>
+        <motor ctrllimited="true" ctrlrange="0.0 5.0" gear="0  0. 1. 0. 0. -0.1" site="motor2"/>
+        <motor ctrllimited="true" ctrlrange="0.0 5.0" gear="0  0. 1. 0. 0.  0.1" site="motor3"/>
 	</actuator>
 </mujoco>

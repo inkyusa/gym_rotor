@@ -51,7 +51,7 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def step(self, action):
         mass=self.get_mass()
         act_min=[0, 0, 0, 0]
-        act_max=[1, 1, 1, 1,]
+        act_max=[5, 5, 5, 5]
         action = np.clip(action, a_min=act_min, a_max=act_max)
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
@@ -60,14 +60,14 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         lin_vel = ob[7:10]
         ang_vel = ob[10:13]
         reward_ctrl = - 1e-4 * np.sum(np.square(action))
-        reward_position = -linalg.norm(pos) * 1e-1
+        reward_position = -linalg.norm(pos) * 1e-0
         reward_linear_velocity = -linalg.norm(lin_vel) * 1e-2
         reward_angular_velocity = -linalg.norm(ang_vel) * 1e-3
         reward_alive = 1e-1
         reward = reward_ctrl+reward_position+reward_linear_velocity+reward_angular_velocity+reward_alive
-        done= abs(pos[2]) >3 \
-                or abs(pos[0]) > 3.0 \
-                or abs(pos[1]) > 3.0
+        done= abs(pos[2]) >5 \
+                or abs(pos[0]) > 5.0 \
+                or abs(pos[1]) > 5.0
         info = {
             'rwp': reward_position,
             'rwlv': reward_linear_velocity,
@@ -94,8 +94,8 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return np.concatenate([pos.flat,vel.flat])
 
     def reset_model(self):
-        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1, high=0.1)
-        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05, high=0.05)
+        qpos = self.init_qpos + self.np_random.uniform(size=self.model.nq, low=-0.1*10, high=0.1*10)
+        qvel = self.init_qvel + self.np_random.uniform(size=self.model.nv, low=-0.05*10, high=0.05*10)
         self.set_state(qpos, qvel)
         observation = self._get_obs();
         return observation
