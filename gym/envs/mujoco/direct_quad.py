@@ -45,7 +45,7 @@ class QuadDirectEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.avg_rwd=-3.0 #obtained from eprewmean
         self.gamma=0.99 #ppo2 default setting value
         self.log_cnt=0
-        mujoco_env.MujocoEnv.__init__(self, 'direct_quadrotor.xml', 5)
+        mujoco_env.MujocoEnv.__init__(self, 'direct_quadrotor_fancy.xml', 5)
         utils.EzPickle.__init__(self)
 
     def step(self, action):
