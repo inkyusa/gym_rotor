@@ -25,7 +25,7 @@ The task of this environment is very simple that we provide a goal position, <a 
 
 In this example, we set  <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{p^{*}}=[0,&space;0,&space;0]^{T}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{p^{*}}=[0,&space;0,&space;0]^{T}" title="\large \boldsymbol{p^{*}}=[0, 0, 0]^{T}" /></a>.
 
-<p align="center"> <img src="http://drive.google.com/uc?export=view&id=17X2N80lA2Ciq8fC9GTyJVR6G-x4Bjy9t" width="550" /> </p>
+<p align="center"> <img src="assets/hovering.gif" width="550" /> </p>
 
 [quad_rate.py](https://github.com/inkyusa/gym_rotor/blob/master/gym/envs/mujoco/quad_rate.py) is OpenAI environment file and [quadrotor_quat.xml](https://github.com/inkyusa/gym_rotor/blob/master/gym/envs/mujoco/assets/quadrotor_quat.xml) is Mujoco model file that describes physical vehicle model and other simulation properties such as air-density, gravity, viscosity, and so on. [quadrotor_quat_fancy.xml](https://github.com/inkyusa/gym_rotor/blob/master/gym/envs/mujoco/assets/quadrotor_quat_fancy.xml) is only for fancier rendering (more effects for lighting, shadow etc.) which usually takes more time to visualize. It is thus recommdended to use [quadrotor_quat.xml](https://github.com/inkyusa/gym_rotor/blob/master/gym/envs/mujoco/assets/quadrotor_quat.xml) for the sake of training time.
 
@@ -73,7 +73,7 @@ Please note that you need to change system dependent variables (e.g., `RL_BASELI
 ## 2. Ball Bouncing Quadrotor (BBQ)
 This environment is minor extension of the privous environment such is rate control. We introduce a ball above the vehicle and shape the reward in the way of hitting the ball at the center of the vehicle. Below animation demonstartes this.
 
-<p align="center">  <img src="http://drive.google.com/uc?export=view&id=1JAVMOKZne7Zxp7ALkqSqmFC9MF607xPd" width="550" /> </p>
+<p align="center"> <img src="assets/BouncingBallQuad02.gif" width="550" /> </p>
 
 Similar to the preivous example, we have 4 input commands , <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{u}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{u}" title="\large \boldsymbol{u}" /></a>, but 19 observations, <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\boldsymbol{o}=[\bold{p},\bold{p}_b,\bold{q},\bold{v},\bold{v}_b,\bold{\omega}]^{T}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\boldsymbol{o}=[\bold{p},\bold{p}_b,\bold{q},\bold{v},\bold{v}_b,\bold{\omega}]^{T}" title="\large \boldsymbol{o}=[\bold{p},\bold{p}_b,\bold{q},\bold{v},\bold{v}_b,\bold{\omega}]^{T}" /></a>. Note that <a href="https://www.codecogs.com/eqnedit.php?latex=\large&space;\bold{q}" target="_blank"><img src="https://latex.codecogs.com/png.latex?\large&space;\bold{q}" title="\large \bold{q}" /></a> is unit quaternion (4x1) and others are correspondence to the vehicle and ball position, linear velocity of vehicle and ball, and vehicle angular velocity respectively (all 3x1).
 
